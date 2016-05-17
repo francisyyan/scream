@@ -8,5 +8,5 @@ LDADD += $(GLIB_LIBS)
 bin_PROGRAMS = ScreamClient ScreamServer 
 
 ScreamClient_SOURCES = ScreamClient.cpp ScreamTx.h ScreamTx.cpp \
-											 RtpQueue.h RtpQueue.cpp 
+											 RtpQueue.h RtpQueue.cpp VideoEnc.h VideoEnc.cpp 
 ScreamServer_SOURCES = ScreamServer.cpp ScreamRx.h ScreamRx.cpp

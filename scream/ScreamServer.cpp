@@ -21,9 +21,9 @@ int main(int argc, char *argv[]) {
   UDPSocket::received_datagram recd = socket.recv();
   cout << recd.payload << endl;
 
-  ScreamRx *scream_rx = new ScreamRx();
+  ScreamRx *screamRx = new ScreamRx();
 
-  delete scream_rx;
+  delete screamRx;
 
   return EXIT_SUCCESS;
 }

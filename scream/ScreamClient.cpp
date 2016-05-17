@@ -5,6 +5,7 @@
 #include "util.hh"
 #include "ScreamTx.h"
 #include "RtpQueue.h"
+#include "VideoEnc.h"
 
 using namespace std;
 
@@ -21,9 +22,16 @@ int main(int argc, char *argv[]) {
 
   socket.send("Hello!");
 
-  ScreamTx *scream_tx = new ScreamTx();
+  ScreamTx *screamTx = new ScreamTx();
+  RtpQueue *rtpQueue = new RtpQueue();
 
-  delete scream_tx;
+  float frameRate = 25.0f;
+  VideoEnc *videoEnc = new VideoEnc(rtpQueue, frameRate, 0.3f);
+  screamTx->registerNewStream(rtpQueue, 10, 1.0f, 5000.0f, 50000.0f, frameRate);
+
+  delete screamTx;
+  delete rtpQueue;
+  delete videoEnc;
 
   return EXIT_SUCCESS;
 }
