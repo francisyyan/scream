@@ -3,6 +3,7 @@
 
 #include "socket.hh"
 #include "util.hh"
+#include "ScreamRx.h"
 
 using namespace std;
 
@@ -19,6 +20,10 @@ int main(int argc, char *argv[]) {
 
   UDPSocket::received_datagram recd = socket.recv();
   cout << recd.payload << endl;
+
+  ScreamRx *scream_rx = new ScreamRx();
+
+  delete scream_rx;
 
   return EXIT_SUCCESS;
 }
