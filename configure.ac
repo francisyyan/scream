@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.68])
-AC_INIT([sourdough], [0.01], [keithw@cs.stanford.edu])
+AC_INIT([scream], [1.0], [yuyan0@stanford.edu])
 AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_SRCDIR([src/address.hh])
 AC_CONFIG_HEADERS([config.h])
@@ -26,5 +26,5 @@ AC_TYPE_UINT16_T
 
 # Checks for library functions.
 
-AC_CONFIG_FILES([Makefile src/Makefile examples/Makefile datagrump/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile scream/Makefile])
 AC_OUTPUT

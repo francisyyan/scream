@@ -19,3 +19,5 @@ Makefile.in
 /compile
 /datagrump/sender
 /datagrump/receiver
+/scream/ScreamClient
+/scream/ScreamServer

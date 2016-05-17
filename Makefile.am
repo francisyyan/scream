@@ -1,1 +1,1 @@
-SUBDIRS = src examples datagrump
+SUBDIRS = src scream 
