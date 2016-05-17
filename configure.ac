@@ -11,13 +11,14 @@ AC_CONFIG_HEADERS([config.h])
 CXX11_FLAGS="-std=c++11 -pthread"
 PICKY_CXXFLAGS="-pedantic -Wall -Wextra -Weffc++ -Werror"
 AC_SUBST([CXX11_FLAGS])
-AC_SUBST([PICKY_CXXFLAGS])
+# AC_SUBST([PICKY_CXXFLAGS])
 
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_RANLIB
 
 # Checks for libraries.
+PKG_CHECK_MODULES([GLIB], [glib-2.0])
 
 # Checks for header files.
 
