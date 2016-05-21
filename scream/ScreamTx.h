@@ -4,8 +4,6 @@
 #include <string.h>
 #include <iostream>
 #include <glib-object.h>
-#include "RtpQueue.h"
-
 using namespace std;
 
 // Constants
@@ -32,6 +30,9 @@ static const gint kBytesInFlightHistSize = 5;
 static const gint kRateRtpHistSize = 21;
 static const gint kRateUpDateSize = 4;
 
+
+
+class RtpQueue;
 class ScreamTx {
 public:
     ScreamTx();
