@@ -1,4 +1,4 @@
-Sourdough: example classes for network programming
+Reproduce [SCReAM](https://github.com/EricssonResearch/scream) (Self-Clocked Rate Adaptation for Multimedia)
 
 To build:
 
