@@ -18,11 +18,6 @@ using namespace std;
 const uint32_t SSRC = 10;
 const uint64_t tmax_ms = 15000; // run 15s
 
-inline uint64_t timestamp_us()
-{
-  return timestamp_ms() * 1000;
-}
-
 void encodeVideoFrame(VideoEnc *videoEnc, ScreamTx *screamTx)
 {
   float frameRate = videoEnc->frameRate;

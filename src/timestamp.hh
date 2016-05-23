@@ -8,4 +8,7 @@
 uint64_t timestamp_ms( void );
 uint64_t timestamp_ms( const timespec & ts );
 
+/* Return time in macroseconds */
+uint64_t timestamp_us( void );
+
 #endif /* TIMESTAMP_HH */
