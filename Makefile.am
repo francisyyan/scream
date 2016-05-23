@@ -1,1 +1,1 @@
-SUBDIRS = src scream
+SUBDIRS = src scream examples
