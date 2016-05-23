@@ -11,6 +11,7 @@
 #include "ScreamTx.h"
 #include "RtpQueue.h"
 #include "VideoEnc.h"
+#include "Packet.h"
 
 using namespace std;
 
@@ -24,15 +25,33 @@ void encodeVideoFrame(VideoEnc *videoEnc, ScreamTx *screamTx)
   videoEnc->setTargetBitrate(targetBitrate);
 
   uint64_t timestamp = timestamp_ms();
-  if (timestamp > tmax_ms)
-    return;
-
-  int rtpBytes = videoEnc->encode(timestamp);
-  screamTx->newMediaFrame(timestamp, SSRC, rtpBytes);
+  int rtpBytes = videoEnc->encode((float) timestamp / 1000);
+  screamTx->newMediaFrame(timestamp * 1000, SSRC, rtpBytes);
 }
 
-void sendRtp(ScreamTx *screamTx, Timerfd &txTimer)
+void sendRtp(ScreamTx *screamTx, RtpQueue *rtpQueue,
+             Timerfd &txTimer, UDPSocket &socket)
 {
+  uint64_t timestamp_us = timestamp_ms() * 1000;
+  uint32_t ssrc;
+  float dT = screamTx->isOkToTransmit(timestamp_us, ssrc); 
+
+  /* RTP packet with ssrc can be immediately transmitted */
+  if (dT == 0.0f) {
+    void *rtpPacketNull;
+    int size;
+    uint16_t seqNr;
+    rtpQueue->sendPacket(rtpPacketNull, size, seqNr); 
+    /* rtpPacketNull is still NULL because SCReAM's API doesn't send real packets */ 
+  }
+
+  /* isOkToTransmit should be called after dT seconds */
+  if (dT > 0.0f) {
+  }
+
+  /* No RTP packet available to transmit */
+  if (dT == -1.0f)
+    return;
 }
 
 void recvRtcp(ScreamTx *screamTx, UDPSocket &socket)
@@ -77,7 +96,7 @@ int main(int argc, char *argv[])
     /* Tx Timer expires */
     if (fds[0].revents | POLLIN) {
       if (txTimer.expirations() > 0)
-        sendRtp(screamTx, txTimer);
+        sendRtp(screamTx, rtpQueue, txTimer, socket);
     }
 
     /* Video Timer expires */
@@ -85,7 +104,7 @@ int main(int argc, char *argv[])
       if (videoTimer.expirations() > 0) {
         encodeVideoFrame(videoEnc, screamTx);
         if (txTimer.isDisarmed())
-          sendRtp(screamTx, txTimer);
+          sendRtp(screamTx, rtpQueue, txTimer, socket);
       }
     }
 
@@ -93,7 +112,7 @@ int main(int argc, char *argv[])
     if (fds[2].revents | POLLIN) {
       recvRtcp(screamTx, socket); 
       if (txTimer.isDisarmed())
-        sendRtp(screamTx, txTimer);
+        sendRtp(screamTx, rtpQueue, txTimer, socket);
     }
   }
 
