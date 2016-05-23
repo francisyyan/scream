@@ -50,7 +50,7 @@ void sendRtp(ScreamTx *screamTx, RtpQueue *rtpQueue,
   /* isOkToTransmit should be called after dT seconds */
   if (dT > 0.0f) {
     if (txTimer.isDisarmed())
-      txTimer.arm(dT * 1000);
+      txTimer.arm((int) (dT * 1000));
   }
 
   /* No RTP packet available to transmit */
@@ -60,6 +60,17 @@ void sendRtp(ScreamTx *screamTx, RtpQueue *rtpQueue,
 
 void recvRtcp(ScreamTx *screamTx, UDPSocket &socket)
 {
+  UDPSocket::received_datagram recd = socket.recv();
+  uint64_t feedbackTimestamp_us = recd.timestamp * 1000;;
+  RtcpPacket rtcpPacket(recd.payload);
+
+  uint32_t ssrc = rtcpPacket.header.ssrc;
+  uint32_t recv_timestamp = rtcpPacket.header.recv_timestamp;
+  uint16_t ack_seq_num = rtcpPacket.header.ack_seq_num;
+  uint8_t num_loss = (uint8_t) rtcpPacket.header.num_loss;
+
+  screamTx->incomingFeedback(feedbackTimestamp_us, ssrc, recv_timestamp,
+                             ack_seq_num, num_loss, false);
 }
 
 int main(int argc, char *argv[])
