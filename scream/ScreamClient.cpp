@@ -48,7 +48,7 @@ void sendRtp(ScreamTx *screamTx, RtpQueue *rtpQueue,
 
   /* isOkToTransmit should be called after dT seconds */
   if (dT > 0.0f) {
-    if (txTimer.isDisarmed())
+    if (txTimer.is_disarmed())
       txTimer.arm((int) (dT * 1000));
   }
 
@@ -79,18 +79,22 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
+  /* UDP socket for client */
   UDPSocket socket;
   socket.connect(Address(argv[1], argv[2]));
 
-  float kFrameRate = 25.0f;
+  float frameRate = 25.0f; /* encode 25 frames per second */
   ScreamTx *screamTx = new ScreamTx();
   RtpQueue *rtpQueue = new RtpQueue();
-  VideoEnc *videoEnc = new VideoEnc(rtpQueue, kFrameRate, 0.1f, false, false, 5);
-  screamTx->registerNewStream(rtpQueue, SSRC, 1.0f, 64000.0f, 5e6, kFrameRate);
+  /* TODO: understand parameters in VideoEnc */ 
+  VideoEnc *videoEnc = new VideoEnc(rtpQueue, frameRate, 0.1f, false, false, 5);
+  screamTx->registerNewStream(rtpQueue, SSRC, 1.0f, 64e3, 5e6, frameRate);
 
+  /* Non-blocking timers for client and video encoder */ 
   Timerfd txTimer(TFD_NONBLOCK);
   Timerfd videoTimer(TFD_NONBLOCK);
-  videoTimer.arm(0, (int) (1e3 / kFrameRate));
+  int encodeInterval_ms = (int) (1e3 / frameRate);
+  videoTimer.arm(encodeInterval_ms, encodeInterval_ms);
   
   struct pollfd fds[3];
   fds[0].fd = txTimer.fd_num();
@@ -101,31 +105,30 @@ int main(int argc, char *argv[])
   fds[2].events = POLLIN;
 
   while (true) {
-    uint64_t timestamp = timestamp_ms();
-    if (timestamp > tmax_ms)
+    if (timestamp_ms() > tmax_ms)
       break;
 
     SystemCall("poll", poll(fds, 3, -1));
 
     /* Tx timer expires */
-    if (fds[0].revents | POLLIN) {
+    if (fds[0].revents & POLLIN) {
       if (txTimer.expirations() > 0)
         sendRtp(screamTx, rtpQueue, txTimer, socket);
     }
 
     /* Video timer expires */
-    if (fds[1].revents | POLLIN) {
+    if (fds[1].revents & POLLIN) {
       if (videoTimer.expirations() > 0) {
         encodeVideoFrame(videoEnc, screamTx);
-        if (txTimer.isDisarmed())
+        if (txTimer.is_disarmed())
           sendRtp(screamTx, rtpQueue, txTimer, socket);
       }
     }
 
     /* Incoming RTCP feedback */
-    if (fds[2].revents | POLLIN) {
+    if (fds[2].revents & POLLIN) {
       recvRtcp(screamTx, socket); 
-      if (txTimer.isDisarmed())
+      if (txTimer.is_disarmed())
         sendRtp(screamTx, rtpQueue, txTimer, socket);
     }
   }
