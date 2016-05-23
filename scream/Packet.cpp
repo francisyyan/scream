@@ -1,6 +1,6 @@
 #include "Packet.h"
 #include <iostream>
-#include <stdlib.h>
+#include <cstdlib>
 #include <netinet/in.h>
 
 using namespace std;
@@ -9,10 +9,10 @@ RtpPacket::RtpPacket(uint32_t ssrc, uint32_t size, uint16_t seq_num)
 {
   header.ssrc = ssrc;
   header.seq_num = seq_num;
-  payload = move(string(size, 'x'));
+  payload = string(size, 'x');
 }
 
-RtpPacket::RtpPacket(std::string &str)
+RtpPacket::RtpPacket(string &str)
 {
   if (str.size() < sizeof(header)) {
     cerr << "RTP packet too small to contain header" << endl; 
@@ -22,7 +22,7 @@ RtpPacket::RtpPacket(std::string &str)
   const char *header_ptr = reinterpret_cast<const char *>(str.data()); 
   header.ssrc = ntohl(*(uint32_t *) header_ptr);
   header.seq_num = ntohs(*(uint16_t *) (header_ptr + 4));
-  payload = move(string(str.begin() + sizeof(header), str.end()));
+  payload = string(str.begin() + sizeof(header), str.end());
 }
 
 string RtpPacket::to_string()
@@ -58,11 +58,6 @@ RtcpPacket::RtcpPacket(string &str)
   header.ack_seq_num = ntohs(*(uint16_t *) (header_ptr + 4));
   header.num_loss = ntohs(*(uint16_t *) (header_ptr + 6));
   header.recv_timestamp = ntohl(*(uint32_t *) (header_ptr + 8));
-}
-
-void RtcpPacket::set_recv_timestamp(uint32_t recv_timestamp)
-{
-  header.recv_timestamp = recv_timestamp;
 }
 
 string RtcpPacket::to_string()

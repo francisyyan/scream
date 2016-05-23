@@ -2,7 +2,7 @@
 #define PACKET_H
 
 #include <string>
-#include <stdint.h>
+#include <cstdint>
 
 struct RtpPacket
 {
@@ -19,7 +19,7 @@ struct RtpPacket
   /* Parse incoming RTP packet */
   RtpPacket(std::string &str);
 
-  /* Make wire representation of packet */
+  /* Make wire representation of RTP packet */
   std::string to_string();
 };
 
@@ -39,10 +39,7 @@ struct RtcpPacket
   /* Parse incoming RTCP packet */
   RtcpPacket(std::string &str);
 
-  /* Fill in the recv_timestamp field */
-  void set_recv_timestamp(uint32_t recv_timestamp);
-
-  /* Make wire representation of packet */
+  /* Make wire representation of RTCP packet */
   std::string to_string();
 };
 
