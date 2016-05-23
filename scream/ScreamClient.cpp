@@ -18,35 +18,39 @@ using namespace std;
 const uint32_t SSRC = 10;
 const uint64_t tmax_ms = 15000; // run 15s
 
+/* Video encoder "encodes" new frames and updates target bitrate */
 void encodeVideoFrame(VideoEnc *videoEnc, ScreamTx *screamTx)
 {
   float targetBitrate = screamTx->getTargetBitrate(SSRC);
   videoEnc->setTargetBitrate(targetBitrate);
 
+  /* encode(time) accepts time as seconds */
   int rtpBytes = videoEnc->encode((float) timestamp_ms() / 1000);
   screamTx->newMediaFrame(timestamp_us(), SSRC, rtpBytes);
 }
 
+/* Check if client can send RTP packets now */
 void sendRtp(ScreamTx *screamTx, RtpQueue *rtpQueue,
              Timerfd &txTimer, UDPSocket &socket)
 {
-  uint32_t ssrc;
+  uint32_t ssrc; /* will be filled in with the SSRC of prioritized stream */
   float dT = screamTx->isOkToTransmit(timestamp_us(), ssrc); 
 
   /* RTP packet with ssrc can be immediately transmitted */
-  if (dT == 0.0f) {
-    void *rtpPacketNull = NULL;
+  while (dT == 0.0f) {
+    void *rtpPacketNull = NULL; /* won't be filled in by API */
     int size;
     uint16_t seqNr;
     rtpQueue->sendPacket(rtpPacketNull, size, seqNr); 
-    /* rtpPacketNull is still NULL because SCReAM's API doesn't send real packets */ 
+
+    /* Create RTP packet with dummy payload of size `size` */
     RtpPacket rtpPacket(ssrc, (uint32_t) size, seqNr);
     socket.send(rtpPacket.to_string());
 
     dT = screamTx->addTransmitted(timestamp_us(), ssrc, size, seqNr);
   }
 
-  /* isOkToTransmit should be called after dT seconds */
+  /* isOkToTransmit() should be called again until dT seconds later */
   if (dT > 0.0f) {
     if (txTimer.is_disarmed())
       txTimer.arm((int) (dT * 1000));
@@ -57,18 +61,24 @@ void sendRtp(ScreamTx *screamTx, RtpQueue *rtpQueue,
     return;
 }
 
+/* Receive incoming RTCP feedback */
 void recvRtcp(ScreamTx *screamTx, UDPSocket &socket)
 {
   UDPSocket::received_datagram recd = socket.recv();
-  uint64_t feedbackTimestamp_us = recd.timestamp * 1000;;
+  /* Client timestamp (us) when received RTCP */
+  uint64_t client_recv_rtcp_ts_us = recd.timestamp * 1000; 
+
+  /* Create RTCP packet */
   RtcpPacket rtcpPacket(recd.payload);
 
   uint32_t ssrc = rtcpPacket.header.ssrc;
-  uint32_t recv_timestamp = rtcpPacket.header.recv_timestamp;
+  /* Server timestamp (ms) when received the RTP packet that is acked by RTCP */
+  uint32_t server_recv_rtp_ts_ms = rtcpPacket.header.recv_timestamp;
   uint16_t ack_seq_num = rtcpPacket.header.ack_seq_num;
   uint8_t num_loss = (uint8_t) rtcpPacket.header.num_loss;
 
-  screamTx->incomingFeedback(feedbackTimestamp_us, ssrc, recv_timestamp,
+  /* Calculate one-way delay and RTT inside */
+  screamTx->incomingFeedback(client_recv_rtcp_ts_us, ssrc, server_recv_rtp_ts_ms,
                              ack_seq_num, num_loss, false);
 }
 
