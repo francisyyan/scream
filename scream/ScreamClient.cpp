@@ -18,23 +18,26 @@ using namespace std;
 const uint32_t SSRC = 10;
 const uint64_t tmax_ms = 15000; // run 15s
 
+inline uint64_t timestamp_us()
+{
+  return timestamp_ms() * 1000;
+}
+
 void encodeVideoFrame(VideoEnc *videoEnc, ScreamTx *screamTx)
 {
   float frameRate = videoEnc->frameRate;
   float targetBitrate = screamTx->getTargetBitrate(SSRC);
   videoEnc->setTargetBitrate(targetBitrate);
 
-  uint64_t timestamp = timestamp_ms();
-  int rtpBytes = videoEnc->encode((float) timestamp / 1000);
-  screamTx->newMediaFrame(timestamp * 1000, SSRC, rtpBytes);
+  int rtpBytes = videoEnc->encode((float) timestamp_ms() / 1000);
+  screamTx->newMediaFrame(timestamp_us(), SSRC, rtpBytes);
 }
 
 void sendRtp(ScreamTx *screamTx, RtpQueue *rtpQueue,
              Timerfd &txTimer, UDPSocket &socket)
 {
-  uint64_t timestamp_us = timestamp_ms() * 1000;
   uint32_t ssrc;
-  float dT = screamTx->isOkToTransmit(timestamp_us, ssrc); 
+  float dT = screamTx->isOkToTransmit(timestamp_us(), ssrc); 
 
   /* RTP packet with ssrc can be immediately transmitted */
   if (dT == 0.0f) {
@@ -43,10 +46,16 @@ void sendRtp(ScreamTx *screamTx, RtpQueue *rtpQueue,
     uint16_t seqNr;
     rtpQueue->sendPacket(rtpPacketNull, size, seqNr); 
     /* rtpPacketNull is still NULL because SCReAM's API doesn't send real packets */ 
+    RtpPacket rtpPacket(ssrc, (uint32_t) size, seqNr);
+    socket.send(rtpPacket.to_string());
+
+    dT = screamTx->addTransmitted(timestamp_us(), ssrc, size, seqNr);
   }
 
   /* isOkToTransmit should be called after dT seconds */
   if (dT > 0.0f) {
+    if (txTimer.isDisarmed())
+      txTimer.arm(dT * 1000);
   }
 
   /* No RTP packet available to transmit */
@@ -91,15 +100,15 @@ int main(int argc, char *argv[])
     if (timestamp > tmax_ms)
       break;
 
-    SystemCall("poll", poll(fds, 2, -1));
+    SystemCall("poll", poll(fds, 3, -1));
 
-    /* Tx Timer expires */
+    /* Tx timer expires */
     if (fds[0].revents | POLLIN) {
       if (txTimer.expirations() > 0)
         sendRtp(screamTx, rtpQueue, txTimer, socket);
     }
 
-    /* Video Timer expires */
+    /* Video timer expires */
     if (fds[1].revents | POLLIN) {
       if (videoTimer.expirations() > 0) {
         encodeVideoFrame(videoEnc, screamTx);
