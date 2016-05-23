@@ -18,7 +18,7 @@ public:
   void arm(int first_exp_ms, int interval_ms = 0);
 
   /* Return true if the timer has stopped */
-  bool isDisarmed();
+  bool is_disarmed();
 
   /* Return the number of expirations occurred */
   int expirations();

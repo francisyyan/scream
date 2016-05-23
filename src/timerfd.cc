@@ -26,7 +26,7 @@ void Timerfd::arm(int first_exp_ms, int interval_ms)
   SystemCall("timerfd_settime", timerfd_settime(fd_num(), 0, &ts, NULL));
 }
 
-bool Timerfd::isDisarmed()
+bool Timerfd::is_disarmed()
 {
   struct itimerspec curr_ts;
   SystemCall("timerfd_gettime", timerfd_gettime(fd_num(), &curr_ts));

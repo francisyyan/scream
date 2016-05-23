@@ -43,7 +43,7 @@ void recvRtp(ScreamRx *screamRx, UDPSocket &socket, Timerfd &feedbackTimer)
     if (sinceLastFeedback_us > feedbackInterval_us) {
       sendRtcp(screamRx, socket);
     } else {
-      if (feedbackTimer.isDisarmed())
+      if (feedbackTimer.is_disarmed())
         feedbackTimer.arm((int) ((feedbackInterval_us - sinceLastFeedback_us) / 1000));
     }
   }
@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
+  /* UDP socket for server */
   UDPSocket socket;
   socket.bind(Address("0", argv[1]));
   cerr << "Listening on " << socket.local_address().to_string() << endl;
