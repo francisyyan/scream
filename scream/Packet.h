@@ -29,18 +29,18 @@ struct RtcpPacket
     uint32_t ssrc;
     uint16_t ack_seq_num;
     uint16_t num_loss; 
-    uint64_t recv_timestamp; 
+    uint32_t recv_timestamp; 
   } header;
 
   /* Create RTCP packet */
   RtcpPacket(uint32_t ssrc, uint16_t ack_seq_num,
-             uint16_t num_loss, uint64_t recv_timestamp); 
+             uint16_t num_loss, uint32_t recv_timestamp); 
 
   /* Parse incoming RTCP packet */
   RtcpPacket(std::string &str);
 
   /* Fill in the recv_timestamp field */
-  void set_recv_timestamp(uint64_t recv_timestamp);
+  void set_recv_timestamp(uint32_t recv_timestamp);
 
   /* Make wire representation of packet */
   std::string to_string();

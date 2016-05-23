@@ -2,7 +2,6 @@
 #include <iostream>
 #include <stdlib.h>
 #include <netinet/in.h>
-#include <endian.h>
 
 using namespace std;
 
@@ -39,7 +38,7 @@ string RtpPacket::to_string()
 }
 
 RtcpPacket::RtcpPacket(uint32_t ssrc, uint16_t ack_seq_num,
-                       uint16_t num_loss, uint64_t recv_timestamp)
+                       uint16_t num_loss, uint32_t recv_timestamp)
 {
   header.ssrc = ssrc;
   header.ack_seq_num = ack_seq_num;
@@ -58,10 +57,10 @@ RtcpPacket::RtcpPacket(string &str)
   header.ssrc = ntohl(*(uint32_t *) header_ptr);
   header.ack_seq_num = ntohs(*(uint16_t *) (header_ptr + 4));
   header.num_loss = ntohs(*(uint16_t *) (header_ptr + 6));
-  header.recv_timestamp = be64toh(*(uint64_t *) (header_ptr + 8));
+  header.recv_timestamp = ntohl(*(uint32_t *) (header_ptr + 8));
 }
 
-void RtcpPacket::set_recv_timestamp(uint64_t recv_timestamp)
+void RtcpPacket::set_recv_timestamp(uint32_t recv_timestamp)
 {
   header.recv_timestamp = recv_timestamp;
 }
@@ -80,7 +79,7 @@ string RtcpPacket::to_string()
   string num_loss_str(reinterpret_cast<const char *>
       (&net_num_loss), sizeof(net_num_loss));
 
-  uint64_t net_recv_timestamp = htobe64(header.recv_timestamp);  
+  uint32_t net_recv_timestamp = htonl(header.recv_timestamp);  
   string recv_timestamp_str(reinterpret_cast<const char *>
       (&net_recv_timestamp), sizeof(net_recv_timestamp));
 
