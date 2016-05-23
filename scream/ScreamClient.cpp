@@ -20,7 +20,6 @@ const uint64_t tmax_ms = 15000; // run 15s
 
 void encodeVideoFrame(VideoEnc *videoEnc, ScreamTx *screamTx)
 {
-  float frameRate = videoEnc->frameRate;
   float targetBitrate = screamTx->getTargetBitrate(SSRC);
   videoEnc->setTargetBitrate(targetBitrate);
 
@@ -36,7 +35,7 @@ void sendRtp(ScreamTx *screamTx, RtpQueue *rtpQueue,
 
   /* RTP packet with ssrc can be immediately transmitted */
   if (dT == 0.0f) {
-    void *rtpPacketNull;
+    void *rtpPacketNull = NULL;
     int size;
     uint16_t seqNr;
     rtpQueue->sendPacket(rtpPacketNull, size, seqNr); 
