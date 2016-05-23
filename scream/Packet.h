@@ -28,13 +28,13 @@ struct RtcpPacket
   struct Header {
     uint32_t ssrc;
     uint16_t ack_seq_num;
-    uint16_t ack_num_loss; 
+    uint16_t num_loss; 
     uint64_t recv_timestamp; 
   } header;
 
   /* Create RTCP packet */
   RtcpPacket(uint32_t ssrc, uint16_t ack_seq_num,
-             uint16_t ack_num_loss, uint64_t recv_timestamp); 
+             uint16_t num_loss, uint64_t recv_timestamp); 
 
   /* Parse incoming RTCP packet */
   RtcpPacket(std::string &str);
