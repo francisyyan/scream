@@ -16,7 +16,7 @@
 using namespace std;
 
 const uint32_t SSRC = 10;
-const uint64_t tmax_ms = 15000; // run 15s
+const uint64_t tmax_ms = 15000; // run 15 seconds
 
 /* Video encoder "encodes" new frames and updates target bitrate */
 void encodeVideoFrame(VideoEnc *videoEnc, ScreamTx *screamTx)
@@ -68,7 +68,7 @@ void recvRtcp(ScreamTx *screamTx, UDPSocket &socket)
   /* Client timestamp (us) when received RTCP */
   uint64_t client_recv_rtcp_ts_us = recd.timestamp * 1000; 
 
-  /* Create RTCP packet */
+  /* Assemble RTCP packet */
   RtcpPacket rtcpPacket(recd.payload);
 
   uint32_t ssrc = rtcpPacket.header.ssrc;
