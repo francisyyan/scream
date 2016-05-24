@@ -132,12 +132,7 @@ int main(int argc, char *argv[])
   fds[2].fd = socket.fd_num();
   fds[2].events = POLLIN;
 
-  while (true) {
-    if (timestamp_ms() - start_time > tmax_ms) {
-      cerr << "Client is quitting" << endl;
-      break;
-    }
-
+  while (timestamp_ms() - start_time <= tmax_ms) {
     SystemCall("poll", poll(fds, 3, -1));
 
     /* Tx timer expires */
