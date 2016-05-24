@@ -38,7 +38,7 @@ void sendRtp(ScreamTx *screamTx, RtpQueue *rtpQueue,
   float dT = screamTx->isOkToTransmit(timestamp_us(), ssrc); 
 
   /* RTP packet with ssrc can be immediately transmitted */
-  while (dT == 0.0f) {
+  if (dT == 0.0f) {
     void *rtpPacketNull = NULL; /* won't be filled in by API */
     int size;
     uint16_t seqNr;
