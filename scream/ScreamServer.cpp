@@ -14,8 +14,6 @@
 using namespace std;
 
 const uint64_t tmax_ms = 15000; // run 15 seconds
-Address client_address;
-bool client_address_initialized = false;
 
 /* Send RTCP feedback */
 void sendRtcp(ScreamRx *screamRx, UDPSocket &socket)
@@ -29,7 +27,7 @@ void sendRtcp(ScreamRx *screamRx, UDPSocket &socket)
   if (screamRx->getFeedback(timestamp_us(), ssrc, 
       recv_timestamp_ms, ack_seq_num, num_loss)) {
     RtcpPacket rtcpPacket(ssrc, ack_seq_num, (uint16_t) num_loss, recv_timestamp_ms);
-    socket.sendto(client_address, rtcpPacket.to_string());
+    socket.send(rtcpPacket.to_string());
 
     cerr << "Sent a RTCP packet acking sequence number " << ack_seq_num
          << " at time " << recv_timestamp_ms << endl;
@@ -40,13 +38,13 @@ void sendRtcp(ScreamRx *screamRx, UDPSocket &socket)
 void recvRtp(ScreamRx *screamRx, UDPSocket &socket, Timerfd &feedbackTimer) 
 {
   static uint64_t feedbackInterval_us = 30000; 
+  static bool knowClient = false;
 
   UDPSocket::received_datagram recd = socket.recv();
   uint64_t recv_timestamp_us = recd.timestamp * 1000;
-
-  if (!client_address_initialized) {
-    client_address_initialized = true;
-    client_address = recd.source_address;
+  if (!knowClient) {
+    knowClient = true;
+    socket.connect(recd.source_address);
   }
 
   /* Assemble RTP packet */
