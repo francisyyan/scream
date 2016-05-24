@@ -14,6 +14,7 @@
 using namespace std;
 
 const uint64_t tmax_ms = 15000; // run 15 seconds
+bool debug = false;
 
 /* Send RTCP feedback */
 void sendRtcp(ScreamRx *screamRx, UDPSocket &socket)
@@ -29,8 +30,10 @@ void sendRtcp(ScreamRx *screamRx, UDPSocket &socket)
     RtcpPacket rtcpPacket(ssrc, ack_seq_num, (uint16_t) num_loss, recv_timestamp_ms);
     socket.send(rtcpPacket.to_string());
 
-    cerr << "Sent a RTCP packet acking sequence number " << ack_seq_num
-         << " at time " << recv_timestamp_ms << endl;
+    if (debug) {
+      cerr << "Sent a RTCP packet acking sequence number " << ack_seq_num
+        << " at time " << recv_timestamp_ms << endl;
+    }
   }
 }
 
@@ -50,9 +53,11 @@ void recvRtp(ScreamRx *screamRx, UDPSocket &socket, Timerfd &feedbackTimer)
   /* Assemble RTP packet */
   RtpPacket rtpPacket(recd.payload);
 
-  cerr << "Received a RTP packet of size " << rtpPacket.payload.size()
-       << " with sequence number " << rtpPacket.header.seq_num
-       << " at time " << recd.timestamp << endl;
+  if (debug) {
+    cerr << "Received a RTP packet of size " << rtpPacket.payload.size()
+      << " with sequence number " << rtpPacket.header.seq_num
+      << " at time " << recd.timestamp << endl;
+  }
 
   screamRx->receive(recv_timestamp_us, 0, rtpPacket.header.ssrc, 
                     (int) rtpPacket.payload.size(), rtpPacket.header.seq_num); 
@@ -71,8 +76,10 @@ void recvRtp(ScreamRx *screamRx, UDPSocket &socket, Timerfd &feedbackTimer)
 
 int main(int argc, char *argv[]) 
 {
-  if (argc != 2) {
-    cerr << "Usage: " << argv[0] << " PORT" << endl; 
+  if (argc == 3 && string(argv[2]) == "debug") {
+    debug = true;
+  } else if (argc != 2) {
+    cerr << "Usage: " << argv[0] << " PORT [debug]" << endl; 
     return EXIT_FAILURE;
   }
 

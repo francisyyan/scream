@@ -17,6 +17,7 @@ using namespace std;
 
 const uint32_t SSRC = 10;
 const uint64_t tmax_ms = 15000; // run 15 seconds
+bool debug = false;
 
 /* Video encoder "encodes" new frames and updates target bitrate */
 void encodeVideoFrame(VideoEnc *videoEnc, ScreamTx *screamTx)
@@ -47,9 +48,11 @@ void sendRtp(ScreamTx *screamTx, RtpQueue *rtpQueue,
     RtpPacket rtpPacket(ssrc, (uint32_t) size, seqNr);
     socket.send(rtpPacket.to_string());
 
-    cerr << "Sent a RTP packet of size " << size
-         << " with sequence number " << seqNr
-         << " at time " << timestamp_ms() << endl;
+    if (debug) {
+      cerr << "Sent a RTP packet of size " << size
+        << " with sequence number " << seqNr
+        << " at time " << timestamp_ms() << endl;
+    }
 
     dT = screamTx->addTransmitted(timestamp_us(), ssrc, size, seqNr);
   }
@@ -75,9 +78,11 @@ void recvRtcp(ScreamTx *screamTx, UDPSocket &socket)
   /* Assemble RTCP packet */
   RtcpPacket rtcpPacket(recd.payload);
 
-  cerr << "Received a RTCP packet acking sequence number "
-       << rtcpPacket.header.ack_seq_num
-       << " at time " << recd.timestamp << endl;
+  if (debug) {
+    cerr << "Received a RTCP packet acking sequence number "
+      << rtcpPacket.header.ack_seq_num
+      << " at time " << recd.timestamp << endl;
+  }
 
   uint32_t ssrc = rtcpPacket.header.ssrc;
   /* Server timestamp (ms) when received the RTP packet that is acked by RTCP */
@@ -92,15 +97,17 @@ void recvRtcp(ScreamTx *screamTx, UDPSocket &socket)
 
 int main(int argc, char *argv[])
 {
-  if (argc != 3) {
-    cerr << "Usage: " << argv[0] << " HOST PORT" << endl; 
+  if (argc == 4 && string(argv[3]) == "debug") {
+    debug = true;
+  } else if (argc != 3) {
+    cerr << "Usage: " << argv[0] << " HOST PORT [debug]" << endl; 
     return EXIT_FAILURE;
   }
 
   /* UDP socket for client */
   UDPSocket socket;
   socket.connect(Address(argv[1], argv[2]));
-
+  
   float frameRate = 25.0f; /* encode 25 frames per second */
   ScreamTx *screamTx = new ScreamTx();
   RtpQueue *rtpQueue = new RtpQueue();
