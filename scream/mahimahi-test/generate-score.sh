@@ -1,3 +1,3 @@
 #!/bin/sh
 
-mm-throughput-graph 500 ./uplink_log > /dev/null
+mm-throughput-graph 500 ./uplink.log > /dev/null

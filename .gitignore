@@ -2,6 +2,7 @@
 *.o
 *~
 *.swp
+*.log
 Makefile
 Makefile.in
 /aclocal.m4
@@ -18,6 +19,7 @@ Makefile.in
 /stamp-h1
 /examples/tcpclient
 /examples/tcpserver
+/examples/test
 /compile
 /datagrump/sender
 /datagrump/receiver
