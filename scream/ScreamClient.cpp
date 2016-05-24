@@ -47,6 +47,10 @@ void sendRtp(ScreamTx *screamTx, RtpQueue *rtpQueue,
     RtpPacket rtpPacket(ssrc, (uint32_t) size, seqNr);
     socket.send(rtpPacket.to_string());
 
+    cerr << "Sent a RTP packet of size " << size
+         << " with sequence number " << seqNr
+         << " at time " << timestamp_ms() << endl;
+
     dT = screamTx->addTransmitted(timestamp_us(), ssrc, size, seqNr);
   }
 
@@ -70,6 +74,10 @@ void recvRtcp(ScreamTx *screamTx, UDPSocket &socket)
 
   /* Assemble RTCP packet */
   RtcpPacket rtcpPacket(recd.payload);
+
+  cerr << "Received a RTCP packet acking sequence number "
+       << rtcpPacket.header.ack_seq_num
+       << " at time " << recd.timestamp << endl;
 
   uint32_t ssrc = rtcpPacket.header.ssrc;
   /* Server timestamp (ms) when received the RTP packet that is acked by RTCP */
