@@ -45,6 +45,7 @@ void recvRtp(ScreamRx *screamRx, UDPSocket &socket, Timerfd &feedbackTimer)
 
   UDPSocket::received_datagram recd = socket.recv();
   uint64_t recv_timestamp_us = recd.timestamp * 1000;
+
   if (!knowClient) {
     knowClient = true;
     socket.connect(recd.source_address);
@@ -85,6 +86,7 @@ int main(int argc, char *argv[])
 
   /* UDP socket for server */
   UDPSocket socket;
+  socket.set_timestamps();
   socket.bind(Address("0", argv[1]));
   cerr << "Listening on " << socket.local_address().to_string() << endl;
 

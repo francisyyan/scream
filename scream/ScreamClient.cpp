@@ -106,6 +106,7 @@ int main(int argc, char *argv[])
 
   /* UDP socket for client */
   UDPSocket socket;
+  socket.set_timestamps();
   socket.connect(Address(argv[1], argv[2]));
   
   float frameRate = 25.0f; /* encode 25 frames per second */
