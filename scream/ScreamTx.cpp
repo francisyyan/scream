@@ -79,7 +79,7 @@ ScreamTx::ScreamTx()
     : sRttSh_us(0),
     sRtt_us(0),
     ackedOwd(0),
-    baseOwd(G_MAXUINT32),
+    baseOwd(G_MAXINT32),
     owd(0.0),
     owdFractionAvg(0.0),
     owdTrend(0.0),
@@ -120,7 +120,7 @@ ScreamTx::ScreamTx()
     lastRateUpdateT_us(0)
 {
     for (int n=0; n < kBaseOwdHistSize; n++)
-        baseOwdHist[n] = G_MAXUINT32;
+        baseOwdHist[n] = G_MAXINT32;
     baseOwdHistPtr = 0;
     for (int n=0; n < kOwdFractionHistSize; n++)
         owdFractionHist[n] = 0.0f;
@@ -996,8 +996,8 @@ void ScreamTx::updateCwnd(guint64 time_us) {
         * a channel change, reset base OWD history
         */
         for (int n=0; n < kBaseOwdHistSize; n++)
-            baseOwdHist[n] = G_MAXUINT32;
-        baseOwd = G_MAXUINT32;
+            baseOwdHist[n] = G_MAXINT32;
+        baseOwd = G_MAXINT32;
         baseOwdResetT_us = time_us;
     }
     /*
@@ -1181,13 +1181,13 @@ void ScreamTx::updateCwnd(guint64 time_us) {
 * Update base OWD (if needed) and return the
 * last estimated OWD (without offset compensation)
 */
-guint32 ScreamTx::estimateOwd(guint64 time_us) {
+gint32 ScreamTx::estimateOwd(guint64 time_us) {
     baseOwd = MIN(baseOwd, ackedOwd);
     if (time_us - lastBaseOwdAddT_us >= 1000000  ) {
         baseOwdHist[baseOwdHistPtr] = baseOwd;
         baseOwdHistPtr = (baseOwdHistPtr+1) % kBaseOwdHistSize;
         lastBaseOwdAddT_us = time_us;
-        baseOwd = G_MAXUINT32;
+        baseOwd = G_MAXINT32;
     }
     return ackedOwd;
 }
@@ -1195,8 +1195,8 @@ guint32 ScreamTx::estimateOwd(guint64 time_us) {
 /*
 * Get the base one way delay
 */
-guint32 ScreamTx::getBaseOwd() {
-    guint32 ret = baseOwd;
+gint32 ScreamTx::getBaseOwd() {
+    gint32 ret = baseOwd;
     for (int n=0; n < kBaseOwdHistSize; n++)
         ret = MIN(ret, baseOwdHist[n]);
     return ret;

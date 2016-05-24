@@ -212,12 +212,12 @@ private:
     * Estimate one way delay [jiffy] and updated base delay
     * Base delay is not subtracted
     */
-    guint32 estimateOwd(guint64 time_us);
+    gint32 estimateOwd(guint64 time_us);
 
     /*
     * return base delay [jiffy]
     */
-    guint32 getBaseOwd(); 
+    gint32 getBaseOwd(); 
 
     /*
     * Compute indicators of shared bottleneck
@@ -276,10 +276,13 @@ private:
     Transmitted txPackets[kMaxTxPackets];
     guint64 sRttSh_us;
     guint64 sRtt_us;
-    guint32 ackedOwd;                      
-    guint32 baseOwd;                       
-                                           
-    guint32 baseOwdHist[kBaseOwdHistSize]; 
+
+    /* OWD is likely to be negative 
+     * since server and client have different clocks! */
+    gint32 ackedOwd;                      
+    gint32 baseOwd;                       
+    gint32 baseOwdHist[kBaseOwdHistSize]; 
+
     gint baseOwdHistPtr;
     gfloat owd;
     gfloat owdFractionAvg;
