@@ -109,7 +109,8 @@ int main(int argc, char *argv[])
 
     /* Feedback timer expires */
     if (fds[1].revents & POLLIN) {
-      sendRtcp(screamRx, socket);
+      if (feedbackTimer.expirations() > 0)
+        sendRtcp(screamRx, socket);
     }
   }
 
