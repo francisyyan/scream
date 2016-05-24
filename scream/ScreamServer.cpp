@@ -13,7 +13,6 @@
 
 using namespace std;
 
-const uint64_t tmax_ms = 15000; // run 15 seconds
 bool debug = false;
 
 /* Send RTCP feedback */
@@ -101,9 +100,6 @@ int main(int argc, char *argv[])
   fds[1].events = POLLIN;
 
   while (true) {
-    if (timestamp_ms() > tmax_ms)
-      break;
-
     SystemCall("poll", poll(fds, 2, -1));
 
     /* Incoming RTP packet */

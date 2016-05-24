@@ -16,7 +16,7 @@
 using namespace std;
 
 const uint32_t SSRC = 10;
-const uint64_t tmax_ms = 15000; // run 15 seconds
+const uint64_t tmax_ms = 13000; // run 13 seconds
 bool debug = false;
 
 /* Video encoder "encodes" new frames and updates target bitrate */
@@ -109,6 +109,8 @@ int main(int argc, char *argv[])
   socket.set_timestamps();
   socket.connect(Address(argv[1], argv[2]));
   
+  uint64_t start_time = timestamp_ms();
+
   float frameRate = 25.0f; /* encode 25 frames per second */
   ScreamTx *screamTx = new ScreamTx();
   RtpQueue *rtpQueue = new RtpQueue();
@@ -131,8 +133,10 @@ int main(int argc, char *argv[])
   fds[2].events = POLLIN;
 
   while (true) {
-    if (timestamp_ms() > tmax_ms)
+    if (timestamp_ms() - start_time > tmax_ms) {
+      cerr << "Client is quitting" << endl;
       break;
+    }
 
     SystemCall("poll", poll(fds, 3, -1));
 
