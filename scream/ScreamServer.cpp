@@ -13,27 +13,33 @@
 
 using namespace std;
 
-const uint64_t tmax_ms = 15000; // run 15s
+const uint64_t tmax_ms = 15000; // run 15 seconds
 
+/* Send RTCP feedback */
 void sendRtcp(ScreamRx *screamRx, UDPSocket &socket)
 {
   uint32_t ssrc;
-  uint32_t recv_timestamp;
+  /* recv_timestamp_ms will be filled in with recv_timestamp_us 
+   * passed in screamRx->receive() divided by 1000 */
+  uint32_t recv_timestamp_ms; 
   uint16_t ack_seq_num;
   uint8_t num_loss;
   if (screamRx->getFeedback(timestamp_us(), ssrc, 
-      recv_timestamp, ack_seq_num, num_loss)) {
-    RtcpPacket rtcpPacket(ssrc, ack_seq_num, (uint16_t) num_loss, recv_timestamp);
+      recv_timestamp_ms, ack_seq_num, num_loss)) {
+    RtcpPacket rtcpPacket(ssrc, ack_seq_num, (uint16_t) num_loss, recv_timestamp_ms);
     socket.send(rtcpPacket.to_string());
   }
 }
 
+/* Receive incoming RTP packet and generate RTCP feedback */
 void recvRtp(ScreamRx *screamRx, UDPSocket &socket, Timerfd &feedbackTimer) 
 {
   static uint64_t feedbackInterval_us = 30000; 
 
   UDPSocket::received_datagram recd = socket.recv();
   uint64_t recv_timestamp_us = recd.timestamp * 1000;
+
+  /* Assemble RTP packet */
   RtpPacket rtpPacket(recd.payload);
   screamRx->receive(recv_timestamp_us, 0, rtpPacket.header.ssrc, 
                     (int) rtpPacket.payload.size(), rtpPacket.header.seq_num); 
@@ -43,6 +49,7 @@ void recvRtp(ScreamRx *screamRx, UDPSocket &socket, Timerfd &feedbackTimer)
     if (sinceLastFeedback_us > feedbackInterval_us) {
       sendRtcp(screamRx, socket);
     } else {
+      /* Pace the pending feedbacks */ 
       if (feedbackTimer.is_disarmed())
         feedbackTimer.arm((int) ((feedbackInterval_us - sinceLastFeedback_us) / 1000));
     }
@@ -78,12 +85,12 @@ int main(int argc, char *argv[])
     SystemCall("poll", poll(fds, 2, -1));
 
     /* Incoming RTP packet */
-    if (fds[0].revents | POLLIN) {
+    if (fds[0].revents & POLLIN) {
       recvRtp(screamRx, socket, feedbackTimer);
     }
 
     /* Feedback timer expires */
-    if (fds[1].revents | POLLIN) {
+    if (fds[1].revents & POLLIN) {
       sendRtcp(screamRx, socket);
     }
   }
