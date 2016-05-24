@@ -75,6 +75,7 @@ static const gfloat kMaxRtpQueueDelay = 2.0;  // 2s
 // Base delay history size
 
 ScreamTx::ScreamTx()
+    /* fix -Werror=reorder */
     : sRttSh_us(0),
     sRtt_us(0),
     ackedOwd(0),
@@ -93,9 +94,12 @@ ScreamTx::ScreamTx()
     cwndMin(kInitMss * 2),
     cwndI(1),
     wasCwndIncrease(FALSE),
-    lastBytesInFlightT_us(0),
     bytesInFlightMaxLo(0),
     bytesInFlightMaxHi(0),
+    accBytesInFlightMax(0),
+    nAccBytesInFlightMax(0),
+    rateTransmitted(0),
+    owdTrendMem(0.0f),
 
     lossEvent(FALSE),
 
@@ -109,14 +113,11 @@ ScreamTx::ScreamTx()
     lastBaseOwdAddT_us(0),
     baseOwdResetT_us(0),
     lastAddToOwdFractionHistT_us(0),
+    lastBytesInFlightT_us(0),
     lastLossEventT_us(0),
     lastTransmitT_us(0),
     nextTransmitT_us(0),
-    lastRateUpdateT_us(0),
-    accBytesInFlightMax(0),
-    nAccBytesInFlightMax(0),
-    rateTransmitted(0),
-    owdTrendMem(0.0f)
+    lastRateUpdateT_us(0)
 {
     for (int n=0; n < kBaseOwdHistSize; n++)
         baseOwdHist[n] = G_MAXUINT32;
@@ -249,7 +250,9 @@ gfloat ScreamTx::isOkToTransmit(guint64 time_us, guint32 &ssrc) {
     if (nextTransmitT_us - time_us > 1000 && nextTransmitT_us > time_us)
         return (nextTransmitT_us-time_us)/1e6;
 
-    gfloat paceInterval = kMinPaceInterval;
+    /* fix -Werror=unused-variable 
+      gfloat paceInterval = kMinPaceInterval;
+    */
 
     bytesInFlightMaxLo = 0;
     if (nAccBytesInFlightMax > 0) {
@@ -390,6 +393,9 @@ void ScreamTx::incomingFeedback(guint64 time_us,
     guint16 highestSeqNr,
     guint8  nLoss,        
     gboolean qBit) {
+        /* fix -Werror=unused-parameter */
+        (void) qBit;
+
         if (!isInitialized) initialize(time_us);
         Stream *stream = getStream(ssrc);
         accBytesInFlightMax += bytesInFlight();
@@ -605,7 +611,11 @@ void ScreamTx::Stream::updateRate(guint64 time_us) {
             isPicked[i] = FALSE;
         for (i=0; i < kRateRtpHistSize; i++) {
             gfloat minR = 1.0e8;
+
+            /* fix -Werror=maybe-uninitialized
             gint minI;
+            */
+            gint minI = 0;
             for (j=0; j < kRateRtpHistSize; j++) {
                 if (rateRtpHist[j] < minR && !isPicked[j]) {
                     minR = rateRtpHist[j];
@@ -872,6 +882,9 @@ void ScreamTx::adjustPriorities(guint64 time_us) {
 * Get the prioritized stream
 */
 ScreamTx::Stream* ScreamTx::getPrioritizedStream(guint64 time_us) {
+    /* fix -Werror=unused-parameter */
+    (void) time_us;
+
     /*
     * Function that prioritizes between streams, this function may need
     * to be modified to handle the prioritization better for e.g 
@@ -913,7 +926,11 @@ ScreamTx::Stream* ScreamTx::getPrioritizedStream(guint64 time_us) {
     for (int n=0; n < nStreams; n++) {
         Stream *tmp = streams[n];
         gfloat priority =  tmp->targetPriority;
-        int rtpSz = tmp->rtpQueue->sizeOfNextRtp();
+
+        /* fix -Werror=unused-variable 
+          int rtpSz = tmp->rtpQueue->sizeOfNextRtp();
+        */
+
         if (tmp->rtpQueue->sizeOfQueue() > 0 && priority > maxPrio) {
             maxPrio = priority;
             stream = tmp;
@@ -926,6 +943,9 @@ ScreamTx::Stream* ScreamTx::getPrioritizedStream(guint64 time_us) {
 * Add credit to streams that was not served
 */
 void ScreamTx::addCredit(guint64 time_us, Stream* servedStream, gint transmittedBytes) {
+    /* fix -Werror=unused-parameter */
+    (void) time_us; 
+
     /*
     * Add a credit to stream(s) that did not get priority to transmit RTP packets
     */ 
@@ -946,6 +966,9 @@ void ScreamTx::addCredit(guint64 time_us, Stream* servedStream, gint transmitted
 * Subtract credit from served stream
 */
 void ScreamTx::subtractCredit(guint64 time_us, Stream* servedStream, gint transmittedBytes) {
+    /* fix -Werror=unused-parameter */
+    (void) time_us;
+
     /*
     * Subtract a credit equal to the number of transmitted bytes from the stream that 
     * transmitted a packet
@@ -1117,7 +1140,11 @@ void ScreamTx::updateCwnd(guint64 time_us) {
     }
 
     if (getSRtt() < 0.01f && owdTrend < 0.1) {
+        /* fix -Werror=sign-compare
         guint tmp = rateTransmitted*0.01f/8;
+        */
+        gint tmp = rateTransmitted*0.01f/8;
+
         tmp = MAX(tmp,maxBytesInFlight*1.5);
         cwnd = MAX(cwnd,tmp);
     }
@@ -1197,7 +1224,12 @@ gint ScreamTx::getMaxBytesInFlightLo() {
     */
     if (bytesInFlightHistLo[bytesInFlightHistPtr] == 0)
         return 0;
+
+    /* fix -Werror=sign-compare
     guint ret = 0;
+    */
+
+    gint ret = 0;
     for (int n=0; n < kBytesInFlightHistSize; n++) {
         ret = MAX(ret,bytesInFlightHistLo[n]);
     }
@@ -1210,7 +1242,12 @@ gint ScreamTx::getMaxBytesInFlightHi() {
     */
     if (bytesInFlightHistHi[bytesInFlightHistPtr] == 0)
         return 0;
+
+    /* fix -Werror=sign-compare
     guint ret = 0;
+    */
+
+    gint ret = 0;
     for (int n=0; n < kBytesInFlightHistSize; n++) {
         ret = MAX(ret,bytesInFlightHistHi[n]);
     }

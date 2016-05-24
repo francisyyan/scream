@@ -6,6 +6,9 @@ using namespace std;
 
 ScreamRx::Stream::Stream(guint32 ssrc_) {
     ssrc = ssrc_;
+    /* fix -Werror=overflow
+    ackVector = 0xffffffff;
+    */
     ackVector = 0xffff;
     nLoss = 0;
     receiveTimestamp = 0x0;
@@ -18,7 +21,7 @@ void ScreamRx::Stream::receive(guint64 time_us,
     gpointer rtpPacket, 
     gint size, 
     guint16 seqNr) {
-        /* Suppress unused-parameter warning */
+        /* fix -Werror=unused-parameter */
         (void) rtpPacket;
         (void) size;
 

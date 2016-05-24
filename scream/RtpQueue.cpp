@@ -38,6 +38,8 @@ bool RtpQueue::pop(void *rtpPacket, int& size, unsigned short& seqNr) {
         return false;
     } else {
         rtpPacket = items[tail]->packet;
+        /* fix -Werror=unused-but-set-parameter */
+        (void) rtpPacket;
         size = items[tail]->size;
         seqNr = items[tail]->seqNr;
         items[tail]->used = false;
