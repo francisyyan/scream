@@ -39,7 +39,8 @@ void sendRtcp(ScreamRx *screamRx, UDPSocket &socket)
 /* Receive incoming RTP packet and generate RTCP feedback */
 void recvRtp(ScreamRx *screamRx, UDPSocket &socket, Timerfd &feedbackTimer) 
 {
-  static uint64_t feedbackInterval_us = 30000; 
+  /* Feedback rate limits the target bitrate */
+  static uint64_t feedbackInterval_us = 10000; 
   static bool knowClient = false;
 
   UDPSocket::received_datagram recd = socket.recv();
