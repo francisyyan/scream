@@ -6,7 +6,7 @@
 
 struct RtpPacket
 {
-  struct Header {
+  struct __attribute__((__packed__)) Header {
     uint32_t ssrc;
     uint16_t seq_num;
   } header;
@@ -25,7 +25,7 @@ struct RtpPacket
 
 struct RtcpPacket
 {
-  struct Header {
+  struct __attribute__((__packed__)) Header {
     uint32_t ssrc;
     uint16_t ack_seq_num;
     uint16_t num_loss; 
