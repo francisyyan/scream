@@ -16,7 +16,7 @@
 using namespace std;
 
 const uint32_t SSRC = 10;
-const uint64_t tmax_ms = 13000; // run 13 seconds
+const uint64_t tmax_ms = 15000; // run 15 seconds
 bool debug = false;
 
 /* Video encoder "encodes" new frames and updates target bitrate */
@@ -49,7 +49,7 @@ void sendRtp(ScreamTx *screamTx, RtpQueue *rtpQueue,
     socket.send(rtpPacket.to_string());
 
     if (debug) {
-      cerr << "Sent a RTP packet of size " << size
+      cerr << "Sent a RTP packet of size " << rtpPacket.payload.size()
         << " with sequence number " << seqNr
         << " at time " << timestamp_ms() << endl;
     }
@@ -90,7 +90,7 @@ void recvRtcp(ScreamTx *screamTx, UDPSocket &socket)
   uint16_t ack_seq_num = rtcpPacket.header.ack_seq_num;
   uint8_t num_loss = (uint8_t) rtcpPacket.header.num_loss;
 
-  /* Calculate one-way delay and RTT inside */
+  /* Calculate one-way delay and RTT inside, then update CWND */
   screamTx->incomingFeedback(client_recv_rtcp_ts_us, ssrc, server_recv_rtp_ts_ms,
                              ack_seq_num, num_loss, false);
 }
@@ -104,18 +104,18 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
+  uint64_t start_time = timestamp_ms();
+  cerr << "Client starts at " << start_time << endl;
+
   /* UDP socket for client */
   UDPSocket socket;
   socket.set_timestamps();
   socket.connect(Address(argv[1], argv[2]));
   
-  uint64_t start_time = timestamp_ms();
-
   float frameRate = 25.0f; /* encode 25 frames per second */
   ScreamTx *screamTx = new ScreamTx();
   RtpQueue *rtpQueue = new RtpQueue();
-  /* TODO: understand parameters in VideoEnc */ 
-  VideoEnc *videoEnc = new VideoEnc(rtpQueue, frameRate, 0.1f, false, false, 5);
+  VideoEnc *videoEnc = new VideoEnc(rtpQueue, frameRate, 0.1f);
   screamTx->registerNewStream(rtpQueue, SSRC, 1.0f, 64e3, 5e6, frameRate);
 
   /* Non-blocking timers for client and video encoder */ 
@@ -124,6 +124,7 @@ int main(int argc, char *argv[])
   int encodeInterval_ms = (int) (1e3 / frameRate);
   videoTimer.arm(encodeInterval_ms, encodeInterval_ms);
   
+  /* Always read the timer that returned POLLIN before arm it again */
   struct pollfd fds[3];
   fds[0].fd = txTimer.fd_num();
   fds[0].events = POLLIN;
