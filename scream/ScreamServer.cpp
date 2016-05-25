@@ -45,6 +45,7 @@ void recvRtp(ScreamRx *screamRx, UDPSocket &socket, Timerfd &feedbackTimer)
   UDPSocket::received_datagram recd = socket.recv();
   uint64_t recv_timestamp_us = recd.timestamp * 1000;
 
+  /* Connect to client after knowing its address */
   if (!knowClient) {
     knowClient = true;
     socket.connect(recd.source_address);
@@ -83,6 +84,9 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
 
+  uint64_t start_time = timestamp_ms();
+  cerr << "Server starts at " << start_time << endl;
+
   /* UDP socket for server */
   UDPSocket socket;
   socket.set_timestamps();
@@ -93,24 +97,25 @@ int main(int argc, char *argv[])
 
   Timerfd feedbackTimer(TFD_NONBLOCK);
 
+  /* Always read the timer that returned POLLIN before arm it again */
   struct pollfd fds[2];
-  fds[0].fd = socket.fd_num();
+  fds[0].fd = feedbackTimer.fd_num();
   fds[0].events = POLLIN;
-  fds[1].fd = feedbackTimer.fd_num();
+  fds[1].fd = socket.fd_num();
   fds[1].events = POLLIN;
 
   while (true) {
     SystemCall("poll", poll(fds, 2, -1));
 
-    /* Incoming RTP packet */
-    if (fds[0].revents & POLLIN) {
-      recvRtp(screamRx, socket, feedbackTimer);
-    }
-
     /* Feedback timer expires */
-    if (fds[1].revents & POLLIN) {
+    if (fds[0].revents & POLLIN) {
       if (feedbackTimer.expirations() > 0)
         sendRtcp(screamRx, socket);
+    }
+
+    /* Incoming RTP packet */
+    if (fds[1].revents & POLLIN) {
+      recvRtp(screamRx, socket, feedbackTimer);
     }
   }
 
