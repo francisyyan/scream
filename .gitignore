@@ -17,11 +17,6 @@ Makefile.in
 /missing
 .deps
 /stamp-h1
-/examples/tcpclient
-/examples/tcpserver
-/examples/test
 /compile
-/datagrump/sender
-/datagrump/receiver
 /scream/ScreamClient
 /scream/ScreamServer
