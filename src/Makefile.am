@@ -8,5 +8,4 @@ libsourdough_a_SOURCES = util.hh \
 	address.hh address.cc \
 	socket.hh socket.cc \
 	poller.hh poller.cc \
-	timestamp.hh timestamp.cc \
-	timerfd.hh timerfd.cc
+	timestamp.hh timestamp.cc

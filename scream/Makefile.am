@@ -9,6 +9,6 @@ bin_PROGRAMS = ScreamClient ScreamServer
 
 ScreamClient_SOURCES = ScreamClient.cpp ScreamTx.h ScreamTx.cpp \
 											 RtpQueue.h RtpQueue.cpp VideoEnc.h VideoEnc.cpp \
-											 Packet.h Packet.cpp
+											 Packet.h Packet.cpp Timerfd.h Timerfd.cpp
 ScreamServer_SOURCES = ScreamServer.cpp ScreamRx.h ScreamRx.cpp \
-											 Packet.h Packet.cpp
+											 Packet.h Packet.cpp Timerfd.h Timerfd.cpp
