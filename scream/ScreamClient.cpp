@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
   float frameRate = 25.0f; /* encode 25 frames per second */
   ScreamTx *screamTx = new ScreamTx();
   RtpQueue *rtpQueue = new RtpQueue();
-  VideoEnc *videoEnc = new VideoEnc(rtpQueue, frameRate, 0.1f, false, false, 5);
+  VideoEnc *videoEnc = new VideoEnc(rtpQueue, frameRate, 0.1f);
   screamTx->registerNewStream(rtpQueue, SSRC, 1.0f, 64e3, 5e6, frameRate);
 
   /* Non-blocking timers for client and video encoder */ 

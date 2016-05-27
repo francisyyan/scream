@@ -77,7 +77,7 @@ plt.scatter(time, bytes_in_flight, s=12, color='blue', label='Bytes in flight')
 plt.xlabel('Time (s)', fontsize = 18)
 plt.ylabel('Network congstion control (bytes)', fontsize = 18)
 ax.set_xlim(0, 40)
-ax.set_ylim(0, 14000)
+ax.set_ylim(0, 12000)
 xlabels = range(0, 45, 5)
 ax.set_xticklabels(xlabels)
 
