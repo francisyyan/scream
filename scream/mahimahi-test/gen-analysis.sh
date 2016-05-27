@@ -1,3 +1,3 @@
 #!/bin/sh
 
-mm-throughput-graph 500 ./uplink.log > scream.html 
+mm-throughput-graph 500 uplink.log > scream.html 

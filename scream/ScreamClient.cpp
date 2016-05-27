@@ -16,7 +16,7 @@
 using namespace std;
 
 const uint32_t SSRC = 10;
-const uint64_t tmax_ms = 15000; // run 15 seconds
+const uint64_t tmax_ms = 40000; // run 40 seconds
 bool debug = false;
 
 /* Video encoder "encodes" new frames and updates target bitrate */
