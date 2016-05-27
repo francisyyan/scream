@@ -3,6 +3,7 @@
 
 #include <string.h>
 #include <iostream>
+#include <fstream>
 #include <glib-object.h>
 using namespace std;
 
@@ -389,5 +390,8 @@ private:
 	* Get the OWD trend
 	*/
 	gfloat getOwdTrend();
+
+  /* Print log to this file */
+  ofstream scream_log;
 };
 #endif

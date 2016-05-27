@@ -140,6 +140,8 @@ int main(int argc, char *argv[])
     if (fds[0].revents & POLLIN) {
       if (txTimer.expirations() > 0)
         sendRtp(screamTx, rtpQueue, txTimer, socket);
+
+      screamTx->printLog((float) timestamp_ms() / 1000);
     }
 
     /* Video timer expires */
@@ -149,6 +151,8 @@ int main(int argc, char *argv[])
         if (txTimer.is_disarmed())
           sendRtp(screamTx, rtpQueue, txTimer, socket);
       }
+
+      screamTx->printLog((float) timestamp_ms() / 1000);
     }
 
     /* Incoming RTCP feedback */
@@ -156,6 +160,8 @@ int main(int argc, char *argv[])
       recvRtcp(screamTx, socket); 
       if (txTimer.is_disarmed())
         sendRtp(screamTx, rtpQueue, txTimer, socket);
+
+      screamTx->printLog((float) timestamp_ms() / 1000);
     }
   }
 

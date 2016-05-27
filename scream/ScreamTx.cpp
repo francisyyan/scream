@@ -138,11 +138,15 @@ ScreamTx::ScreamTx()
     nStreams = 0;
     for (int n=0; n < kMaxStreams; n++) 
         streams[n] = NULL;
+
+    scream_log.open("scream.log", ofstream::out);
 }
 
 ScreamTx::~ScreamTx() {
     for (int n=0; n < nStreams; n++) 
         delete streams[n];
+
+    scream_log.close();
 }
 
 /*
@@ -481,19 +485,23 @@ gfloat ScreamTx::getTargetBitrate(guint32 ssrc) {
 }
 
 void ScreamTx::printLog(double time) {
+    /* 
     gint inFlightMax = MAX(bytesInFlight(),getMaxBytesInFlightHi());
 
-    /* 2- 4 */	cout <<	owd             << " " << owdTrend           << " " << owdTarget   << " " 
-        /* 5- 7 */		 << owdSbdVar       << " " << owdSbdSkew         << " " << getSRtt()   << " "
-        /* 8-11 */		 << cwnd            << " " << cwndI              << " " << inFlightMax << " " << bytesInFlight() << " " 
-        /*12-13 */		 << isInFastStart() << " " << getPacingBitrate() << " ";
+    cout <<	owd             << " " << owdTrend           << " " << owdTarget   << " " 
+    << owdSbdVar       << " " << owdSbdSkew         << " " << getSRtt()   << " "
+    << cwnd            << " " << cwndI              << " " << inFlightMax << " " << bytesInFlight() << " " 
+    << isInFastStart() << " " << getPacingBitrate() << " ";
 
     for (int n=0; n < nStreams; n++) {
         Stream *tmp = streams[n];
-        /*14-20 */		 	    cout << tmp->txSizeBitsAvg/8 << " " << tmp->rtpQueue->getDelay(time) << " "
-            << tmp->targetBitrate << " " << tmp->targetBitrateI << " " << tmp->getMaxRate() << " " << tmp->rateTransmitted << " " << tmp->rateAcked << " ";
-        /*21-27 */
+        cout << tmp->txSizeBitsAvg/8 << " " << tmp->rtpQueue->getDelay(time) << " "
+             << tmp->targetBitrate << " " << tmp->targetBitrateI << " " << tmp->getMaxRate() << " " << tmp->rateTransmitted << " " << tmp->rateAcked << " ";
     }
+    */
+  scream_log << time << " " << streams[0]->rtpQueue->getDelay(time) << " " 
+             << owd << " " << owdTarget << " " << cwnd << " "
+             << streams[0]->rateTransmitted << " "<< bytesInFlight() << endl; 
 }
 
 void ScreamTx::initialize(guint64 time_us) {
