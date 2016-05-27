@@ -500,8 +500,9 @@ void ScreamTx::printLog(double time) {
     }
     */
   scream_log << time << " " << streams[0]->rtpQueue->getDelay(time) << " " 
-             << owd << " " << owdTarget << " " << cwnd << " "
-             << streams[0]->rateTransmitted << " "<< bytesInFlight() << endl; 
+    << owd << " " << owdTarget << " "
+    << streams[0]->rateTransmitted << " "
+    << cwnd << " " << bytesInFlight() << endl; 
 }
 
 void ScreamTx::initialize(guint64 time_us) {
