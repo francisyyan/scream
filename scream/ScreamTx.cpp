@@ -1044,6 +1044,16 @@ void ScreamTx::updateCwnd(guint64 time_us) {
                 * This function avoids the adjustment of owdTarget when 
                 * congestion occurs (indicated by high owdSbdVar and owdSbdSkew)
                 */
+                
+                /*
+                cerr << "owdSbdVar=" << owdSbdVar << " owdSbdSkew=" << owdSbdSkew
+                     << " owdSbdMeanSh=" << owdSbdMeanSh << " owdTarget=" << owdTarget
+                     << endl;
+                */
+
+                /* Need to change parameters in order to adapt 
+                   delay target to competing flows */
+                /* if (owdSbdVar < 1 && owdSbdSkew < 2) { */ 
                 if (owdSbdVar < 0.2 && owdSbdSkew < 0.05) { 
                     owdTarget = MAX(kOwdTargetMin,
                         MIN(kOwdTargetMax,owdSbdMeanSh*kOwdTargetMin*1.1f));
