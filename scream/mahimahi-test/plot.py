@@ -29,6 +29,7 @@ while True:
 
 # Plot video frame delay, OWD and delay target
 fig, ax = plt.subplots()
+fig.set_size_inches(10, 5)
 ax.grid(True)
 
 plt.plot(time, frame_delay, color='blue', linewidth=2, label='Video frame delay')
@@ -51,6 +52,7 @@ fig.savefig('delay.pdf', format='pdf', dpi=500)
 
 # Plot throughput
 fig, ax = plt.subplots()
+fig.set_size_inches(10, 5)
 ax.grid(True)
 
 plt.plot(time, bitrate, color='blue', linewidth=2)
@@ -69,6 +71,7 @@ fig.savefig('bitrate.pdf', format='pdf', dpi=500)
 
 # Plot cwnd and bytes in flight
 fig, ax = plt.subplots()
+fig.set_size_inches(10, 5)
 ax.grid(True)
 
 plt.plot(time, cwnd, color='red', linewidth=2, label='CWND')
