@@ -1053,8 +1053,8 @@ void ScreamTx::updateCwnd(guint64 time_us) {
 
                 /* Need to change parameters in order to adapt 
                    delay target to competing flows */
-                // if (owdSbdVar < 1 && owdSbdSkew < 2) {
-                if (owdSbdVar < 0.2 && owdSbdSkew < 0.05) { 
+                if (owdSbdVar < 1 && owdSbdSkew < 2) {
+                // if (owdSbdVar < 0.2 && owdSbdSkew < 0.05) { 
                     owdTarget = MAX(kOwdTargetMin,
                         MIN(kOwdTargetMax,owdSbdMeanSh*kOwdTargetMin*1.1f));
                 } else if (owdSbdMeanSh*kOwdTargetMin < owdTarget) {
